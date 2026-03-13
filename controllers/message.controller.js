@@ -79,14 +79,19 @@ const sendPushToChatMembers = async ({ chatMembers, senderId, messageText }) => 
     if (!tokens.length) {
       return;
     }
+    console.log(tokens);
+    
 
-    await admin.messaging().sendEachForMulticast({
+   let response = await admin.messaging().sendEachForMulticast({
       tokens,
       notification: {
         title: "💬 New Message",
         body: messageText || "You have a new message",
       },
     });
+    console.log("Success count:", response.successCount);
+console.log("Failure count:", response.failureCount);
+console.log("Responses:", response.responses);
 
   } catch (err) {
     console.error("❌ Push error:", err.message);
