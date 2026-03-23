@@ -1,4 +1,5 @@
 let io;
+let callRooms = {};
 import { Server } from "socket.io";
 
 export const initSocket = (server) => {
@@ -56,8 +57,13 @@ export const initSocket = (server) => {
     });
 
     // CALL USER
-    socket.on("call-user", ({ toUserId, fromUserId, callType, name, url, users }) => {
+    
+    socket.on("call-user", ({ toUserId, fromUserId, callType, name, url, users,chatid }) => {
+     if (!callRooms[chatid]) {
+    callRooms[chatid] = [];
+  }
 
+  callRooms[chatid].push(fromUserId);
       if (Array.isArray(toUserId)) {
 
         const targets = toUserId.filter(id => id !== fromUserId);
@@ -71,7 +77,8 @@ export const initSocket = (server) => {
             callType,
             name,
             url,
-            users
+            users,
+            chatid
           });
 
         });
@@ -83,22 +90,31 @@ export const initSocket = (server) => {
           callType,
           name,
           url,
-          users
+          users,
+          chatid
         });
 
       }
+
 
     });
 
 
     
-    socket.on("accept-call", ({ toUserId }) => {
+    socket.on("accept-call", ({ toUserId ,users,chatId}) => {
 
       console.log("Call accepted by:", socket.userId);
       console.log("Call uid",toUserId);
+      console.log("users:",users);
+      console.log("chatid is",chatId);
+      console.log(callRooms);
+      
+      callRooms[chatId].forEach((id) => {
+        io.to(id).emit("call-accepted", socket.userId);
+      })
+      callRooms[chatId].push(socket.userId);
       
 
-      io.to(toUserId).emit("call-accepted", socket.userId);
 
     });
 
@@ -179,6 +195,16 @@ console.log(toUserId);
         fromUserId: toUserId
       });
     }
+
+     
+
+    });
+    socket.on("end-caller", ({ myId,chatid }) => {
+if(!chatid || !myId) return;
+    callRooms[chatid] =callRooms[chatid].filter((id) => id !== myId);
+
+     console.log("remove this",myId);
+     console.log("room is",callRooms[chatid]);
 
      
 

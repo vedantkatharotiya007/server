@@ -9,11 +9,13 @@ import createuser from "./routes/user.routes.js";
 import friend from "./routes/friend.routes.js";
 import chat from "./routes/chat.routes.js";
 import group from "./routes/group.routes.js";
+import path from "path";
 
 dotenv.config();
 
 const app = express();
 app.use(cors());
+app.use("/public", express.static(path.join(process.cwd(), "public")));
 app.use(express.json());
 
 connectDB();

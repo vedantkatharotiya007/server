@@ -4,21 +4,37 @@ import Chat from "../models/chat.js";
 import { getIO } from "../config/socket.js";
 import admin from "../config/firebaseAdmin.js";
 export const addmessage = async (req, res) => {
-  let user = await User.findOne({ clerkId: req.body.data.userId });
+ 
+  let { userId,msg, friend } = req.body;
+   let fileUrl = null;
+    let fileType = null;
+ if (typeof friend === "string") {
+      friend = JSON.parse(friend);
+    }
+    console.log(req.file);
+    
+    if (req.file) {
+      fileUrl = `/public/uploads/${req.file.filename}`;
+      fileType = req.file.mimetype;
+    }
+  
+  let user = await User.findOne({ clerkId:userId });
 var chat1;
 
-  if(req.body.data.friend.chatid){
- chat1=await Chat.findOne({ _id:req.body.data.friend.chatid });
+
+
+  if(friend.chatid){
+ chat1=await Chat.findOne({ _id:friend.chatid });
  
 if(chat1){
-    chat1.lastMessage = req.body.data.message;
+    chat1.lastMessage = msg;
     chat1.lastMessageAt = new Date();
     await chat1.save();
 }
  }else{
-    chat1=await Chat.findOne({ _id:req.body.data.friend.chatId });
+    chat1=await Chat.findOne({ _id:friend.chatId });
 if(chat1){
-    chat1.lastMessage = req.body.data.message;
+    chat1.lastMessage = msg;
     chat1.lastMessageAt = new Date();
     await chat1.save();
  }
@@ -26,24 +42,25 @@ if(chat1){
    
 
 
+console.log(chat1);
 
 
    
-    let message = await Message.create({ chatId: chat1._id,senderId:user._id, text: req.body.data.message });
+    let message = await Message.create({ chatId: chat1._id,senderId:user._id,file:fileUrl,fileType:fileType, text: msg });
    let io=getIO();
    
-   if(req.body.data.friend.chatid){
+   if(friend.chatid){
 
-    io.to(req.body.data.friend.chatid.toString()).emit("message", message);
+    io.to(friend.chatid.toString()).emit("message", message);
    }else{
 
-    io.to(req.body.data.friend.chatId.toString()).emit("message", message);
+    io.to(friend.chatId.toString()).emit("message", message);
    }
   
    sendPushToChatMembers({
       chatMembers: chat1.members,
       senderId: user._id,
-      messageText: req.body.data.message,
+      messageText: msg,
     });
 
    
