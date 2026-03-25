@@ -9,6 +9,7 @@ import createuser from "./routes/user.routes.js";
 import friend from "./routes/friend.routes.js";
 import chat from "./routes/chat.routes.js";
 import group from "./routes/group.routes.js";
+import ai from "./routes/ai.routes.js";
 import path from "path";
 
 dotenv.config();
@@ -24,6 +25,7 @@ app.use("/api/user",createuser);
 app.use("/api/friend",friend);
 app.use("/api/chat",chat);
 app.use("/api/group",group);
+app.use("/api/chatgpt",ai)
 const server = http.createServer(app);
 initSocket(server);
 
