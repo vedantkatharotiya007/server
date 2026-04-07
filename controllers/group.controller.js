@@ -11,12 +11,10 @@ export const addgroup=async(req,res)=>{
     let group=await groups.create({name:name,members:[...members,adminId],admin:adminId,chatid:chatid._id});
  group.members.forEach(async (member) => {
    io.to(member.toString()).emit("create",group);
-
+console.log(member);
  }) 
  const users = await User.find({ _id: { $in: allMembers } });
-console.log("Found users:", users.length);
-console.log(users); 
- console.log(allMembers);
+
  
    let usersupdate= await User.updateMany(
       { _id: { $in: allMembers } },
